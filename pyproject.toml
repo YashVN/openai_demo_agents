@@ -1,0 +1,25 @@
+[project]
+name = "openai-demo-agents"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "YashVN", email = "yaswant.nanda@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "openai-agents>=0.24.0",
+    "python-dotenv>=1.2.4",
+]
+
+[project.scripts]
+openai-demo-agents = "openai_demo_agents:main"
+
+[build-system]
+requires = ["uv_build>=0.12.17,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.4.0",
+]
