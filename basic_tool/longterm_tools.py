@@ -6,13 +6,13 @@ MEMORY_DB = "Longterm.db"
 
 @dataclass
 class UserContext:
-    user_id:str
+    user_id: str
 
-def initialize_memory()-> None:
-    ''' Initialize the SQLite database and create the necessary tables. '''
+def initialize_memory() -> None:
+    """Initialize the SQLite database and create the necessary tables."""
     with sqlite3.connect(MEMORY_DB) as connection:
         connection.execute("""
-        CREATE TABLE IF NOT EXISTS memories (
+            CREATE TABLE IF NOT EXISTS memories (
                 user_id TEXT NOT NULL,
                 memory_key TEXT NOT NULL,
                 memory_value TEXT NOT NULL,
@@ -21,17 +21,20 @@ def initialize_memory()-> None:
         """)
 
 @function_tool
-def remember_fact(ctx:RunContextWrapper[UserContext],
-                  key:str,
-                  value:str)-> str:
-    '''Save or update user info
+def remember_fact(
+    ctx: RunContextWrapper[UserContext],
+    key: str,
+    value: str
+) -> str:
+    """Save or update user info.
+    
     Args:
         key: Descriptive key identifying the memory.
         value: Information to remember.
 
     Returns:
         Confirmation message.
-    '''
+    """
     user_id = ctx.context.user_id
     print(f"[Memory Write] {user_id}:{key}={value}")
     with sqlite3.connect(MEMORY_DB) as connection:
@@ -42,44 +45,43 @@ def remember_fact(ctx:RunContextWrapper[UserContext],
             ON CONFLICT (user_id, memory_key)
             DO UPDATE SET memory_value = excluded.memory_value;
             """,
-            (user_id,key,value)
+            (user_id, key, value)
         )
     return f"Successfully remembered {key}."
 
 @function_tool 
 def recall_fact(
-    ctx:RunContextWrapper[UserContext],
-    key:str,
-)->str:
-     """Retrieve a previously stored fact.
-     
-     Args:
-         key: Memory key to retrieve.
-     
-     Returns:
-         Stored memory value or a not-found message.
-     """
-     user_id = ctx.context.user_id
+    ctx: RunContextWrapper[UserContext],
+    key: str,
+) -> str:
+    """Retrieve a previously stored fact.
+    
+    Args:
+        key: Memory key to retrieve.
+    
+    Returns:
+        Stored memory value or a not-found message.
+    """
+    user_id = ctx.context.user_id
 
-     with sqlite3.connect(MEMORY_DB) as connection:
-         result = connection.execute(
+    with sqlite3.connect(MEMORY_DB) as connection:
+        result = connection.execute(
             """
             SELECT memory_value
             FROM memories
             WHERE user_id = ? AND memory_key = ?;
             """,
-            (user_id,key)
-         ).fetchone()
+            (user_id, key)
+        ).fetchone()
 
-     if result is None:
-         return f"No Memory found for '{key}'."
-     print(f"[Memory Read] {user_id}:{key} = {result[0]}")
+    if result is None:
+        return f"No Memory found for '{key}'."
+    print(f"[Memory Read] {user_id}:{key} = {result[0]}")
 
-     return result[0]
-
+    return result[0]
 
 @function_tool
-def list_facts(ctx:RunContextWrapper[UserContext])->str:
+def list_facts(ctx: RunContextWrapper[UserContext]) -> str:
     """List all stored facts belonging to the current user.
     
     Returns:
@@ -94,8 +96,8 @@ def list_facts(ctx:RunContextWrapper[UserContext])->str:
             WHERE user_id = ?
             ORDER BY memory_key;
             """,
-            (user_id,).fetchall()   
-        )
+            (user_id,)
+        ).fetchall()
 
     if not results:
         return "No memories found for this user"
@@ -103,10 +105,5 @@ def list_facts(ctx:RunContextWrapper[UserContext])->str:
 
     return "\n".join(
         f"{key}:{value}"
-        for key,value in results 
+        for key, value in results 
     )
-    
-
-     
-    
-        
